@@ -113,7 +113,6 @@ void showScore(int score) {
   showDigit(ones, 21);
   showDigit(tens, 0);
 }
-}
 ```
 
 This, in fact, works. Here's the test strip lighting up the segments for the number `42`. The digit `4` is segments `b c f g`, and the digit `2` is segments `a b d e g`.
