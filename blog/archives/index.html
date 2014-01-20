@@ -9,8 +9,7 @@
   <meta name="author" content="rubyist">
 
   
-  <meta name="description" content=" Blog Archive 2014 LED Strips As 7 Segment Display
-Jan 20 2014 posted in arduino Recent Posts LED Strips As 7 Segment Display ">
+  <meta name="description" content="Blog Archive Recent Posts GitHub Repos Status updating... @rubyist on GitHub $(document).ready(function(){ if (!window.jXHR){ var jxhr = document. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -44,9 +43,11 @@ Jan 20 2014 posted in arduino Recent Posts LED Strips As 7 Segment Display ">
 <ul>
   <li><a href="/">Blog</a></li>
   <li><a href="/blog/archives">Archives</a></li>
-  <li><a href="/aboutme/">Author</a></li>
+  <li><a href="https://github.com/rubyist">GitHub</a></li>
+  <li><a href="https://twitter.com/rubyist">Twitter</a></li>
 </ul>
 </div>
+
 
   <div id="main">
     <div id="content">
@@ -59,23 +60,6 @@ Jan 20 2014 posted in arduino Recent Posts LED Strips As 7 Segment Display ">
   </header>
   
   <div id="blog-archives">
-
-
-
-  
-  <h2>2014</h2>
-
-<article>
-  
-<h1><a href="/blog/2014/01/20/led-strips-as-7-segment-display/">LED Strips As 7 Segment Display</a></h1>
-<time datetime="2014-01-20T00:00:00-05:00" pubdate><span class='month'>Jan</span> <span class='day'>20</span> <span class='year'>2014</span></time>
-
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/arduino/'>arduino</a></span>
-</footer>
-
-
-</article>
 
 </div>
 
@@ -91,11 +75,36 @@ Jan 20 2014 posted in arduino Recent Posts LED Strips As 7 Segment Display ">
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
     
-      <li class="post">
-        <a href="/blog/2014/01/20/led-strips-as-7-segment-display/">LED Strips As 7 Segment Display</a>
-      </li>
-    
   </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/rubyist">@rubyist</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'rubyist',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
 </section>
 
 
