@@ -1,38 +1,111 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[rubyist]]></title>
-  <link href="http://rubyist.github.io/atom.xml" rel="self"/>
-  <link href="http://rubyist.github.io/"/>
-  <updated>2014-01-20T16:26:27-05:00</updated>
-  <id>http://rubyist.github.io/</id>
-  <author>
-    <name><![CDATA[rubyist]]></name>
-    
-  </author>
-  <generator uri="http://octopress.org/">Octopress</generator>
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>LED Strips As 7 Segment Display - rubyist</title>
+  <meta name="author" content="rubyist">
 
   
-  <entry>
-    <title type="html"><![CDATA[LED Strips As 7 Segment Display]]></title>
-    <link href="http://rubyist.github.io/blog/2014/01/20/led-strips-as-7-segment-display/"/>
-    <updated>2014-01-20T00:00:00-05:00</updated>
-    <id>http://rubyist.github.io/blog/2014/01/20/led-strips-as-7-segment-display</id>
-    <content type="html"><![CDATA[<p>In this post, I&rsquo;ll detail the steps I took to use <a href="https://www.sparkfun.com/products/12021">LED RGB Strips</a> to back a large, wall-mounted seven segment display for <a href="https://github.com/rubyist/pingduino">rubyist/pingduino</a>. Pingduino is an arduino based score keeper for ping pong games. A full build write-up will be posted here soon (after I finish building it). In the write-up I&rsquo;ll detail the iterations on the display that lead to this point, but this post will focus only on my final implementation.</p>
+  <meta name="description" content="In this post, I&rsquo;ll detail the steps I took to use LED RGB Strips to back a large, wall-mounted seven segment display for rubyist/pingduino. &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://rubyist.github.io/blog/2014/01/20/led-strips-as-7-segment-display">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="rubyist" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=Vollkorn:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Cabin' rel='stylesheet' type='text/css'>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-47245169-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">rubyist</a></h1>
+</hgroup>
+
+</header>
+<div class="navi">
+<ul>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="https://github.com/rubyist">GitHub</a></li>
+  <li><a href="https://twitter.com/rubyist">Twitter</a></li>
+</ul>
+</div>
+
+
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">LED Strips as 7 Segment Display</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-01-20T00:00:00-05:00" pubdate data-updated="true">Jan 20<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>In this post, I&rsquo;ll detail the steps I took to use <a href="https://www.sparkfun.com/products/12021">LED RGB Strips</a> to back a large, wall-mounted seven segment display for <a href="https://github.com/rubyist/pingduino">rubyist/pingduino</a>. Pingduino is an arduino based score keeper for ping pong games. A full build write-up will be posted here soon (after I finish building it). In the write-up I&rsquo;ll detail the iterations on the display that lead to this point, but this post will focus only on my final implementation.</p>
 
 <p>With these LED strips, each LED is individually addressable. You can turn a single LED on or off, or modify its color without affecting any other LEDs in the strip. They are also conveniently sliceable so you can cut the strip then solder wires between the pads to put some space between the LEDs. These strips require only one IO pin on the arduino and no other components. Contrast this to using a shift register based approach where you need one chip per digit, a resistor for each LED, and 3 pins on the arduino. Also, a lot of patience when routing the final PCB.</p>
 
 <p>The display will be modelled after a typical 7-Segment LED display. I&rsquo;ll use 3 LEDs for each segment, cutting and wiring the strips like so:</p>
 
-<p><img class="center" src="http://rubyist.github.io/images/led-strips/digit.png"></p>
+<p><img class="center" src="/images/led-strips/digit.png"></p>
 
 <p>I didn&rsquo;t want to cut up my strips until I&rsquo;d tested the code, so I laid it out like this:</p>
 
-<p><img class="center" src="http://rubyist.github.io/images/led-strips/strip.jpg"></p>
+<p><img class="center" src="/images/led-strips/strip.jpg"></p>
 
 <p>Ultimately I&rsquo;ll need 4 digits to display the scores, but I started testing with one digit. First up, I drew out a table to figure out the state of each LED given the digit (0 &ndash; 9) I wanted to display. I broke the table up by 4 bits because I figured I&rsquo;d be writing these out in hex in the code, this just makes figuring out the hex a bit easier. Given we have 7 segments with 3 LEDs per segment, we need 21 bits to store the states for any given digit, so the first 3 bits will always be 0. You&rsquo;ll see in the code that these bits are ignored anyway.</p>
 
-<p><img class="center" src="http://rubyist.github.io/images/led-strips/table.png"></p>
+<p><img class="center" src="/images/led-strips/table.png"></p>
 
 <p>For my first piece of test code I just iterated through the numbers and checked that the appropriate LEDs were lit.</p>
 
@@ -199,7 +272,7 @@
 
 <p>This, in fact, works. Here&rsquo;s the test strip lighting up the segments for the number <code>42</code>. The digit <code>4</code> is segments <code>b c f g</code>, and the digit <code>2</code> is segments <code>a b d e g</code>.</p>
 
-<p><img class="center" src="http://rubyist.github.io/images/led-strips/strip-42.jpg"></p>
+<p><img class="center" src="/images/led-strips/strip-42.jpg"></p>
 
 <p>Using this strategy you can then add more offets to be able to push out all the digits. For two players we need four digits total, so player 2&rsquo;s tens offset would be <code>42</code> and the ones offset would be <code>63</code>.</p>
 
@@ -229,7 +302,99 @@
 
 
 <p>Don&rsquo;t forget to modify the for loop in showDigit in a similar way. You will, of course, have to generate an appropriate array of bitmaps to use. I&rsquo;ll leave that up to you! In the next post I&rsquo;ll design and build a case for this and show how the LED strips are sliced up and wired back together to make the digits.</p>
-]]></content>
-  </entry>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
   
-</feed>
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/01/20/led-strips-as-7-segment-display/">LED Strips As 7 Segment Display</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/rubyist">@rubyist</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'rubyist',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - rubyist -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
