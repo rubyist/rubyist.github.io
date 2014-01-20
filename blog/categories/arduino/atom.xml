@@ -4,7 +4,7 @@
   <title><![CDATA[Category: arduino | rubyist]]></title>
   <link href="http://rubyist.github.io/blog/categories/arduino/atom.xml" rel="self"/>
   <link href="http://rubyist.github.io/"/>
-  <updated>2014-01-20T16:05:03-05:00</updated>
+  <updated>2014-01-20T16:09:10-05:00</updated>
   <id>http://rubyist.github.io/</id>
   <author>
     <name><![CDATA[rubyist]]></name>
@@ -134,7 +134,6 @@ void showScore(int score) {
 
 <p>  showDigit(ones, 21);
   showDigit(tens, 0);
-}
 }
 ```</p>
 

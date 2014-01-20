@@ -1,20 +1,24 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
+        <loc>http://rubyist.github.io/blog/2014/01/20/led-strips-as-7-segment-display/</loc>
+        <lastmod>2014-01-20T16:08:49-05:00</lastmod>
+    </url>
+    <url>
         <loc>http://rubyist.github.io/404.html</loc>
         <lastmod>2013-12-14T13:56:07-05:00</lastmod>
     </url>
     <url>
         <loc>http://rubyist.github.io/blog/archives/</loc>
-        <lastmod>2013-12-14T13:56:07-05:00</lastmod>
+        <lastmod>2014-01-20T16:08:49-05:00</lastmod>
     </url>
     <url>
         <loc>http://rubyist.github.io/blog/</loc>
-        <lastmod>2013-12-14T13:56:07-05:00</lastmod>
+        <lastmod>2014-01-20T16:08:49-05:00</lastmod>
     </url>
     <url>
         <loc>http://rubyist.github.io/</loc>
-        <lastmod>2013-12-14T13:56:07-05:00</lastmod>
+        <lastmod>2014-01-20T16:08:49-05:00</lastmod>
     </url>
     <url>
         <loc>http://rubyist.github.io/robots.txt</loc>
