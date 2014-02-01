@@ -175,6 +175,250 @@
 
 </article>
 
+
+    <article class="post">
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/01/20/led-strips-as-7-segment-display/">LED Strips as 7 Segment Display</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-01-20T00:00:00-05:00" pubdate data-updated="true">Jan 20<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In this post, I&rsquo;ll detail the steps I took to use <a href="https://www.sparkfun.com/products/12021">LED RGB Strips</a> to back a large, wall-mounted seven segment display for <a href="https://github.com/rubyist/pingduino">rubyist/pingduino</a>. Pingduino is an arduino based score keeper for ping pong games. A full build write-up will be posted here soon (after I finish building it). In the write-up I&rsquo;ll detail the iterations on the display that lead to this point, but this post will focus only on my final implementation.</p>
+
+<p>With these LED strips, each LED is individually addressable. You can turn a single LED on or off, or modify its color without affecting any other LEDs in the strip. They are also conveniently sliceable so you can cut the strip then solder wires between the pads to put some space between the LEDs. These strips require only one IO pin on the arduino and no other components. Contrast this to using a shift register based approach where you need one chip per digit, a resistor for each LED, and 3 pins on the arduino. Also, a lot of patience when routing the final PCB.</p>
+
+<p>The display will be modelled after a typical 7-Segment LED display. I&rsquo;ll use 3 LEDs for each segment, cutting and wiring the strips like so:</p>
+
+<p><img class="center" src="/images/led-strips/digit.png"></p>
+
+<p>I didn&rsquo;t want to cut up my strips until I&rsquo;d tested the code, so I laid it out like this:</p>
+
+<p><img class="center" src="/images/led-strips/strip.jpg"></p>
+
+<p>Ultimately I&rsquo;ll need 4 digits to display the scores, but I started testing with one digit. First up, I drew out a table to figure out the state of each LED given the digit (0 &ndash; 9) I wanted to display. I broke the table up by 4 bits because I figured I&rsquo;d be writing these out in hex in the code, this just makes figuring out the hex a bit easier. Given we have 7 segments with 3 LEDs per segment, we need 21 bits to store the states for any given digit, so the first 3 bits will always be 0. You&rsquo;ll see in the code that these bits are ignored anyway.</p>
+
+<p><img class="center" src="/images/led-strips/table.png"></p>
+
+<p>For my first piece of test code I just iterated through the numbers and checked that the appropriate LEDs were lit.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#include &lt;Adafruit_NeoPixel.h&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="cp">#define PIN 8</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Adafruit_NeoPixel</span> <span class="n">strip</span> <span class="o">=</span> <span class="n">Adafruit_NeoPixel</span><span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="n">PIN</span><span class="p">,</span> <span class="n">NEO_GRB</span> <span class="o">+</span> <span class="n">NEO_KHZ800</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">DigitBytes</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'> <span class="mh">0x0003FFFF</span><span class="p">,</span> <span class="c1">// 0</span>
+</span><span class='line'> <span class="mh">0x000001F8</span><span class="p">,</span> <span class="c1">// 1</span>
+</span><span class='line'> <span class="mh">0x001C7E3F</span><span class="p">,</span> <span class="c1">// 2</span>
+</span><span class='line'> <span class="mh">0x001C0FFF</span><span class="p">,</span> <span class="c1">// 3</span>
+</span><span class='line'> <span class="mh">0x001F81F8</span><span class="p">,</span> <span class="c1">// 4</span>
+</span><span class='line'> <span class="mh">0x001F8FC7</span><span class="p">,</span> <span class="c1">// 5</span>
+</span><span class='line'> <span class="mh">0x001FFFC7</span><span class="p">,</span> <span class="c1">// 6</span>
+</span><span class='line'> <span class="mh">0x000001FF</span><span class="p">,</span> <span class="c1">// 7</span>
+</span><span class='line'> <span class="mh">0x001FFFFF</span><span class="p">,</span> <span class="c1">// 8</span>
+</span><span class='line'> <span class="mh">0x001F81FF</span>  <span class="c1">// 9</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="n">strip</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="nf">showDigit</span><span class="p">(</span><span class="kt">int</span> <span class="n">d</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">digit</span> <span class="o">=</span> <span class="n">DigitBytes</span><span class="p">[</span><span class="n">d</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">21</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">digit</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="n">strip</span><span class="p">.</span><span class="n">setPixelColor</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mh">0xFF0000</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>      <span class="n">strip</span><span class="p">.</span><span class="n">setPixelColor</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mh">0x000000</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="n">digit</span> <span class="o">=</span> <span class="n">digit</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="n">strip</span><span class="p">.</span><span class="n">show</span><span class="p">();</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="n">x</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">showDigit</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">delay</span><span class="p">(</span><span class="mi">5000</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In this code, we set up an array with the hex values determined from the table above. <code>unsigned long</code> are 32 bits, so there&rsquo;s an extra 8 bits in the hex values that you don&rsquo;t see laid out in the table. To display a number we pull out the hex value then loop through each bit, which corresponds to an LED, and see if it needs to be turned on or off. We stop short of all 32 bits available so we don&rsquo;t write over any LEDs farther down the line. This will be important when we add more digits to the display.</p>
+
+<p>So, this test worked. Ping pong scores, however, use more than one digit. To display two digits we should be able to just add an offset to <code>showDigit()</code>, like so:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="kt">void</span> <span class="nf">showDigit</span><span class="p">(</span><span class="kt">int</span> <span class="n">d</span><span class="p">,</span> <span class="kt">int</span> <span class="n">offset</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">digit</span> <span class="o">=</span> <span class="n">DigitBytes</span><span class="p">[</span><span class="n">d</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">offset</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">offset</span> <span class="o">+</span> <span class="mi">21</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">digit</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="n">strip</span><span class="p">.</span><span class="n">setPixelColor</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mh">0xFF0000</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>      <span class="n">strip</span><span class="p">.</span><span class="n">setPixelColor</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mh">0x000000</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="n">digit</span> <span class="o">=</span> <span class="n">digit</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="n">strip</span><span class="p">.</span><span class="n">show</span><span class="p">();</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="n">x</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">showDigit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">showDigit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">21</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">delay</span><span class="p">(</span><span class="mi">5000</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This should light up the appropriate segments, and in fact it does. Ping pong has two players, each needing two digits. You can push all four digits down the line by continuing to scale the offset like this.</p>
+
+<p>The score is kept as an integer in the code, so it&rsquo;d be nice to just pass <code>10</code> to show the score of 10. This is easy enough:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="kt">void</span> <span class="nf">showScore</span><span class="p">(</span><span class="kt">int</span> <span class="n">score</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">ones</span> <span class="o">=</span> <span class="n">score</span> <span class="o">%</span> <span class="mi">10</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">tens</span> <span class="o">=</span> <span class="n">score</span> <span class="o">/</span> <span class="mi">10</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">showDigit</span><span class="p">(</span><span class="n">ones</span><span class="p">,</span> <span class="mi">21</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">showDigit</span><span class="p">(</span><span class="n">tens</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This, in fact, works. Here&rsquo;s the test strip lighting up the segments for the number <code>42</code>. The digit <code>4</code> is segments <code>b c f g</code>, and the digit <code>2</code> is segments <code>a b d e g</code>.</p>
+
+<p><img class="center" src="/images/led-strips/strip-42.jpg"></p>
+
+<p>Using this strategy you can then add more offets to be able to push out all the digits. For two players we need four digits total, so player 2&rsquo;s tens offset would be <code>42</code> and the ones offset would be <code>63</code>.</p>
+
+<p><em><strong>Note:</strong></em> Be careful hooking this many LEDs to your arduino. On USB power it&rsquo;ll drive the 60 LEDs that are in the 1 meter strip without much problem, but it starts to flake out when adding more, depending on how many you&rsquo;ve got lit up and the brightness. In the final build the strips will have their own power supply that can handle the current draw needed.</p>
+
+<p>If you&rsquo;d like to use this technique and use something other than 3 LEDs per segment it should be pretty easy to do. You can avoid hardcoding the offsets by doing something like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#define LEDSPERSEGMENT 3</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="nf">showScore</span><span class="p">(</span><span class="kt">int</span> <span class="n">score</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">ones</span> <span class="o">=</span> <span class="n">score</span> <span class="o">%</span> <span class="mi">10</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">tens</span> <span class="o">=</span> <span class="n">score</span> <span class="o">/</span> <span class="mi">10</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">showDigit</span><span class="p">(</span><span class="n">ones</span><span class="p">,</span> <span class="p">(</span><span class="n">LEDSPERSEGMENT</span> <span class="o">*</span> <span class="mi">7</span><span class="p">));</span>
+</span><span class='line'>  <span class="n">showDigit</span><span class="p">(</span><span class="n">tens</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Don&rsquo;t forget to modify the for loop in showDigit in a similar way. You will, of course, have to generate an appropriate array of bitmaps to use. I&rsquo;ll leave that up to you! In the next post I&rsquo;ll design and build a case for this and show how the LED strips are sliced up and wired back together to make the digits.</p>
+</div>
+  
+  
+
+</article>
+
 <nav id="pagenavi">
     
     
