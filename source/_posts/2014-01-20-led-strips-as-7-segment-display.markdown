@@ -3,7 +3,7 @@ layout: post
 title: "LED Strips As 7 Segment Display"
 date: 2014-01-20
 comments: false
-published: false
+published: true
 categories: arduino
 ---
 
