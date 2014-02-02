@@ -35,7 +35,7 @@ I was pretty excited about this because it printed and except for some minor jun
 The problem here is that it's too high. The post is threaded and there's a little knurled screw piece that screws onto it to clamp everything down. The threaded post was not coming through the piece. I failed to measure and pay attention to the height of this screw. The hole was also not quite wide enough. The piece fit over the threaded portion of the screw, but not the unthreaded base, so the piece didn't quite sit all the way down.
 
 ## Version 2
-Back into OpenSCAD. I lopped off the top to bring the height down. I also flipped it so that the wider radius of the cylinder was at the top. This would make it easier to grab and pull off the cleaner. I also had this brilliant idea to add a little diskat the bottom the size of the hole in a 45 to help center it. Amazing!
+Back into OpenSCAD. I lopped off the top to bring the height down. I also flipped it so that the wider radius of the cylinder was at the top. This would make it easier to grab and pull off the cleaner. I also had this brilliant idea to add a little disk at the bottom the size of the hole in a 45 to help center it. Amazing!
 
 {% img center /images/making-a-thing/version2.gif %}
 
